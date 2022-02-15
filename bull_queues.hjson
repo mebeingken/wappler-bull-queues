@@ -1,0 +1,338 @@
+[
+  {
+  type: 'bull_queues_create_queue',
+  module : 'bull_queues',
+  action : 'create_queue',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Create Queue @@var(actionName)@@',
+  icon : 'fad fa-layer-plus comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1",
+                 "axios": "^0.25.0",
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'response', 
+        type: 'text'}
+  ],
+  properties : [
+      
+    {
+        group: 'Queue Config',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        },
+          { 
+            name: 'concurrent_jobs', 
+            optionName: 'concurrent_jobs', 
+            title: 'Number of concurrent jobs', 
+            type: 'text', 
+            required: false, 
+            defaultValue: '5',
+            serverDataBindings: true,
+            help: 'How many jobs are allowed to be run in parallel.'
+        },
+        { 
+            name: 'max_jobs', 
+            optionName: 'max_jobs', 
+            title: 'Max jobs', 
+            type: 'text', 
+            required: false, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Maximum number of jobs processed '
+        },
+        { 
+            name: 'max_duration', 
+            optionName: 'max_duration', 
+            title: 'Duration for Max Jobs', 
+            type: 'text', 
+            required: false, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Duration period when calculating Max Jobs'
+        }
+        ]
+      }
+  ]
+},
+{
+  type: 'bull_queues_add_job',
+  module : 'bull_queues',
+  action : 'add_job',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Add Job @@var(actionName)@@',
+  icon : 'fas fa-plus-octagon comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1",
+                 "axios": "^0.25.0",
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'job_id', 
+        type: 'text'}
+  ],
+  properties : [
+      
+    {
+        group: 'Library Config',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        },
+          { 
+            name: 'library_file', 
+            optionName: 'library_file', 
+            title: 'Library File', 
+            type: 'file', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the library file that will process this job.'
+        },
+        { name: 'bindings', optionName: 'bindings', key: 'var', keyValue: 'value', title: 'Library PARAM\'s', type: 'grid', defaultValue: {}, serverDataBindings: true,
+                columns: [
+                    { field: 'var', caption: 'Variable', size: '30%', editable: {type: 'text'}},
+                    { field: 'value', caption: 'Value', size: '70%', editable: {type: 'datapicker'}}]},
+        ]
+      }
+  ]
+},
+{
+  type: 'bull_queues_receive_job',
+  module : 'bull_queues',
+  action : 'receive_job',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Receive Job @@var(actionName)@@',
+  icon : 'fad fa-database comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1",
+                 "axios": "^0.25.0",
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'job_id', 
+        type: 'number'
+        },
+        {
+        name: 'timestamp', 
+        type: 'date'
+        },
+        {
+        name: 'delay', 
+        type: 'number'
+        },
+        {
+        name: 'attempts', 
+        type: 'number'
+        },
+        {
+        name: 'job_data', 
+        type: 'object'
+        }
+  ],
+  properties : [
+      
+    {
+      group: 'Job Response',
+      variables: [
+        { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+      ]
+    }
+  ]
+},
+{
+  type: 'bull_queues_queue_status',
+  module : 'bull_queues',
+  action : 'queue_status',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Queue Status @@var(actionName)@@',
+  icon : 'far fa-poll comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1",
+                 "axios": "^0.25.0",
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'job_id', 
+        type: 'text'}
+  ],
+  properties : [
+    {
+      group: 'Job Data',
+      variables: [
+        { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+      ]
+    }
+  ]
+},
+{
+  type: 'bull_queues_job_state',
+  module : 'bull_queues',
+  action : 'job_state',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Job State @@var(actionName)@@',
+  icon : 'fad fa-spinner comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1",
+                 "axios": "^0.25.0",
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'job', 
+        type: 'object'},
+        {
+        name: 'job_state', 
+        type: 'text'}
+  ],
+  properties : [
+    {
+      group: 'Job Data',
+      variables: [
+        { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        { 
+            name: 'job_id', 
+            optionName: 'job_id', 
+            title: 'JobID', 
+            type: 'text', 
+            required: true,
+            serverDataBindings: true
+            
+        },
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+      ]
+    }
+  ]
+},
+{
+  type: 'bull_queues_destroy_queue',
+  module : 'bull_queues',
+  action : 'destroy_queue',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Destroy Queue @@var(actionName)@@',
+  icon : 'fad fa-shredder comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1",
+                 "axios": "^0.25.0",
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'response', 
+        type: 'test'}
+  ],
+  properties : [
+    {
+      group: 'Queue',
+      variables: [
+        { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+      ]
+    }
+  ]
+}
+]
