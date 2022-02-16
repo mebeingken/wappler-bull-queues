@@ -1,154 +1,200 @@
 // JavaScript Document
 const { toSystemPath } = require('../../../lib/core/path');
-
-
 const Queue = require('bull');
-let customQueue = null;
 
-function setup_queue() {
-    if (customQueue == null) {
+let bullQueues = {};
 
-        let processorPath = toSystemPath('/extensions/server_connect/modules/bull_processor.js');
+const redisReady = global.redisClient.ready;
+const processorPath = toSystemPath('/extensions/server_connect/modules/bull_processor.js');
+let responseMessages = {};
+responseMessages['noredis'] = { "response": 'Queue NOT created -- No Redis connection' };
 
-        customQueue = new Queue('custom-queue', {
-            redis: {
-                port: global.redisClient.connection_options.port, host: global.redisClient.connection_options.host
-            }
-        });
-
-        customQueue.process(5, processorPath);
-
+let queueOptions = {
+    redis: {
+        port: global.redisClient.connection_options.port, host: global.redisClient.connection_options.host
     }
 }
 
+function setup_queue(queueName) {
+
+    if (!bullQueues[queueName]) {
+
+        bullQueues[queueName] = new Queue(queueName, queueOptions);
+
+        bullQueues[queueName].process(5, processorPath);
+    }
+
+}
+
+function getQueueNames(obj, options) {
+
+    let queueDisplayName = obj.parseRequired(options.queue_name, 'string', 'Queue name is required'),
+        queueName = 'bull-q-' + queueDisplayName;
+
+    return { queueDisplayName, queueName };
+
+}
 
 exports.create_queue = async function (options) {
 
+    if (redisReady) {
 
-    if (customQueue == null) {
+        let { queueDisplayName, queueName } = getQueueNames(this, options);
 
-        let processorPath = toSystemPath('/extensions/server_connect/modules/bull_processor.js');
-        let concurrent_jobs = this.parseOptional(options.concurrent_jobs, 'number', 5);
-        let max_jobs = this.parseOptional(options.max_jobs, 'number', '');
-        let max_duration = this.parseOptional(options.max_duration, 'number', '');
+        if (!bullQueues[queueName]) {
 
-        if (max_duration != '' & max_jobs != '') {
-            customQueue = new Queue('custom-queue', {
-                redis: {
-                    port: global.redisClient.connection_options.port, host: global.redisClient.connection_options.host
-                },
-                limiter: {
-                    max: max_jobs,
-                    duration: max_duration
-                }
+            let concurrent_jobs = this.parseOptional(options.concurrent_jobs, 'number', 5);
+            let max_jobs = this.parseOptional(options.max_jobs, 'number', '');
+            let max_duration = this.parseOptional(options.max_duration, 'number', '');
 
-            });
+            if (max_duration != '' & max_jobs != '') {
+
+                Object.assign(queueOptions, {
+                    limiter: {
+                        max: max_jobs,
+                        duration: max_duration
+                    }
+                });
+
+            }
+
+            bullQueues[queueName] = new Queue(queueName, queueOptions);
+
+            bullQueues[queueName].process(concurrent_jobs, processorPath);
+
+            let jobscount = await bullQueues[queueName].getJobCounts().catch(console.error);
+
+            if (jobscount) {
+                return { "response": 'Queue ' + queueDisplayName + ' created' };
+            } else {
+                return {
+                    "response": 'Queue ' + queueDisplayName + ' NOT created'
+                };
+            }
+
         } else {
-            customQueue = new Queue('custom-queue', {
-                redis: {
-                    port: global.redisClient.connection_options.port, host: global.redisClient.connection_options.host
-                }
-
-            });
-        }
-
-
-
-        customQueue.process(concurrent_jobs, processorPath);
-
-        let jobscount = await customQueue.getJobCounts().catch(console.error);
-        if (jobscount) {
-            return { "response": jobscount };
-        } else {
-            return { "response": 'Queue NOT created' };
+            return { "response": 'Queue ' + queueDisplayName + ' NOT created -- it already exists' };
         }
     } else {
-        return { "response": 'Queue NOT created -- already exists' };
+        return responseMessages.noredis;
     }
+
 
 };
 
 exports.destroy_queue = async function (options) {
 
+    if (redisReady) {
 
+        let { queueDisplayName, queueName } = getQueueNames(this, options);
 
-    setup_queue();
+        bullQueues[queueName] = new Queue(queueName, queueOptions);
 
-    customQueue.obliterate({ force: true });
-    customQueue = null;
-    return { "response": 'Queue destroyed.' };
+        bullQueues[queueName].obliterate({ force: true });
+        bullQueues[queueName] = null;
 
+        return { "response": 'Queue ' + queueDisplayName + ' destroyed.' };
 
+    } else {
 
+        return responseMessages.noredis;
+    }
 };
 
 exports.queue_status = async function (options) {
+    if (redisReady) {
 
+        let { queueDisplayName, queueName } = getQueueNames(this, options);
 
+        if (bullQueues[queueName]) {
 
-    setup_queue();
+            let jobscount = await bullQueues[queueName].getJobCounts().catch(console.error);
+            Object.assign(jobscount, { "queue": queueDisplayName })
 
-    let jobscount = await customQueue.getJobCounts().catch(console.error);
-    return { "jobs_count": jobscount };
+            return { "jobs_count": jobscount };
 
+        } else {
 
+            return { "response": 'Queue ' + queueDisplayName + ' does not exist.' };
+        }
+    } else {
 
+        return responseMessages.noredis;
+    }
 };
 
 exports.job_state = async function (options) {
+    if (redisReady) {
 
+        let { queueDisplayName, queueName } = getQueueNames(this, options);
 
-    setup_queue();
+        if (bullQueues[queueName]) {
+            let job_id = this.parseRequired(options.job_id, 'string', 'parameter job id is required.');
+            let job = await bullQueues[queueName].getJob(job_id);
 
-    let job_id = this.parseRequired(options.job_id, 'string', 'parameter job id is required.');
+            if (job) {
 
-    let job = await customQueue.getJob(job_id);
-    if (job) {
-        job_state = await job.getState();
+                job_state = await job.getState();
+
+            } else {
+
+                job_state = 'Job not found'
+
+            }
+
+            return { "job": job, "job_state": job_state };
+
+        } else {
+
+            return { "response": 'Queue ' + queueDisplayName + ' does not exist.' };
+        }
     } else {
-        job_state = 'Job not found'
+
+        return responseMessages.noredis;
     }
-
-
-    return { "job": job, "job_state": job_state };
-
 };
 
-exports.receive_job = async function (options) {
-
-    setup_queue();
-
-
-    return {
-        "id": this.req.body.id, "timestamp": this.req.body.opts.timestamp, "attempts": this.req.body.opts.attempts, "delay": this.req.body.opts.delay, "data": this.req.body.data.jobData
-    }
-
-
-};
 
 exports.add_job = async function (options) {
 
+    if (redisReady) {
 
-    setup_queue();
+        let { queueDisplayName, queueName } = getQueueNames(this, options);
+        let createQueue = this.parseOptional(options.create_queue, 'boolean', false);
 
-    let libraryFile = this.parseRequired(options.library_file, 'string', 'parameter library_file is required.');
+        if (createQueue) {
+            setup_queue(queueName);
+        }
 
-    try {
-        var myRegexp = /(?<=lib\/).*/;
-        var libraryName = myRegexp.exec(libraryFile)[0].replace('.json', '');
-    } catch (error) {
-        return { "error": "You must select a file from this project's app/modules/lib folder (or its children)" };
+        if (bullQueues[queueName]) {
+            let libraryFile = this.parseRequired(options.library_file, 'string', 'parameter library_file is required.');
+
+            try {
+                var myRegexp = /(?<=lib\/).*/;
+                var libraryName = myRegexp.exec(libraryFile)[0].replace('.json', '');
+
+            } catch (error) {
+
+                return { "error": "You must select a file from this project's app/modules/lib folder (or its children)" };
+            }
+
+            var jobData = this.parse(options.bindings) || {}
+
+            const job = await bullQueues[queueName].add({
+
+                jobData: jobData,
+                action: libraryName
+            });
+
+            return { "job_id": job.id, "queue": queueDisplayName };
+
+        } else {
+            return {
+                "response": 'Queue ' + queueDisplayName + ' does not exist.'
+            };
+        }
+    } else {
+        return responseMessages.noredis;
     }
-
-    var jobData = this.parse(options.bindings) || {}
-
-    const job = await customQueue.add({
-
-        jobData: jobData,
-        action: libraryName
-    });
-
-    return { "job_id": job.id };
-
 };
 

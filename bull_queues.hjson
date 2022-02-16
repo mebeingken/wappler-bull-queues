@@ -39,6 +39,15 @@
             title: 'Output', 
             type: 'boolean', 
             defaultValue: false 
+        },{ 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Name of this queue to be referenced by other actions.'
         },
           { 
             name: 'concurrent_jobs', 
@@ -92,12 +101,16 @@
   dataScheme: [
     {
         name: 'job_id', 
-        type: 'text'}
+        type: 'text'
+        },
+        {
+        name: 'queue', 
+        type: 'text'
+        }
   ],
   properties : [
-      
-    {
-        group: 'Library Config',
+      {
+        group: 'Queue Config',
         variables: [
             { 
             name: 'actionName', 
@@ -116,6 +129,34 @@
             defaultValue: false 
         },
           { 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue that will process this job.'
+        },
+        { 
+            name: 'create_queue', 
+            optionName: 'create_queue', 
+            title: 'Create queue', 
+            type: 'boolean', 
+            required: false, 
+            defaultValue: false,
+            serverDataBindings: true,
+            help: 'If ticked, creates the queue with default settings if it does not alreay exist.'
+        }
+        ]
+      },
+    {
+        group: 'Library Config',
+        variables: [
+            
+        
+       
+          { 
             name: 'library_file', 
             optionName: 'library_file', 
             title: 'Library File', 
@@ -133,67 +174,7 @@
       }
   ]
 },
-{
-  type: 'bull_queues_receive_job',
-  module : 'bull_queues',
-  action : 'receive_job',
-  groupTitle : 'Bull Queues',
-  groupIcon : 'fas fa-skull-cow comp-exec',
-  title : 'Receive Job @@var(actionName)@@',
-  icon : 'fad fa-database comp-exec',
-  usedModules : {
-			node: {
-				 "bull": "^4.5.1",
-                 "axios": "^0.25.0",
-			}
-		},
-  dataPickObject: true,
-  dataScheme: [
-    {
-        name: 'job_id', 
-        type: 'number'
-        },
-        {
-        name: 'timestamp', 
-        type: 'date'
-        },
-        {
-        name: 'delay', 
-        type: 'number'
-        },
-        {
-        name: 'attempts', 
-        type: 'number'
-        },
-        {
-        name: 'job_data', 
-        type: 'object'
-        }
-  ],
-  properties : [
-      
-    {
-      group: 'Job Response',
-      variables: [
-        { 
-            name: 'actionName', 
-            optionName: 'name', 
-            title: 'Name', 
-            type: 'text', 
-            required: true, 
-            defaultValue: ''
-        },
-        { 
-            name: 'output', 
-            optionName: 'output', 
-            title: 'Output', 
-            type: 'boolean', 
-            defaultValue: false 
-        }
-      ]
-    }
-  ]
-},
+
 {
   type: 'bull_queues_queue_status',
   module : 'bull_queues',
@@ -225,6 +206,15 @@
             type: 'text', 
             required: true, 
             defaultValue: ''
+        },{ 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue.'
         },
         { 
             name: 'output', 
@@ -271,6 +261,15 @@
             type: 'text', 
             required: true, 
             defaultValue: ''
+        },{ 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue that holds this job.'
         },
         { 
             name: 'job_id', 
@@ -323,6 +322,15 @@
             type: 'text', 
             required: true, 
             defaultValue: ''
+        },{ 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue to be destroyed.'
         },
         { 
             name: 'output', 
