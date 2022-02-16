@@ -10,7 +10,7 @@ Allows for the creation of one to many queues to offload the execution of Wapple
 * In your project folder, create /extensions/server_connect/modules (if it does not yet exist)
 * Unzip the source code into /extensions/server_connect/modules (3 files)
 * Refresh the Server Actions panel (restarting Wappler is also an option)
-* The required libraries will be installed automatically upon use
+* The required libraries will be installed automatically upon use and next deployment
 * You should now have a Bull Queues group in your available actions list for server workflows
 
 ## Actions
