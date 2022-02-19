@@ -162,12 +162,15 @@ exports.add_job = async function (options) {
         let { queueDisplayName, queueName } = getQueueNames(this, options);
         let createQueue = this.parseOptional(options.create_queue, 'boolean', false);
 
+
         if (createQueue) {
             setup_queue(queueName);
         }
 
         if (bullQueues[queueName]) {
             let libraryFile = this.parseRequired(options.library_file, 'string', 'parameter library_file is required.');
+            let delay_ms = options.delay_ms;
+
 
             try {
                 var myRegexp = /(?<=lib\/).*/;
@@ -180,11 +183,16 @@ exports.add_job = async function (options) {
 
             var jobData = this.parse(options.bindings) || {}
 
-            const job = await bullQueues[queueName].add({
+            const job = await bullQueues[queueName].add(
+                {
 
-                jobData: jobData,
-                action: libraryName
-            });
+                    jobData: jobData,
+                    action: libraryName
+                },
+                {
+                    delay: delay_ms
+                }
+            ).catch(console.error);
 
             return { "job_id": job.id, "queue": queueDisplayName };
 

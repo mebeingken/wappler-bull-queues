@@ -146,17 +146,15 @@
             required: false, 
             defaultValue: false,
             serverDataBindings: true,
-            help: 'If ticked, creates the queue with default settings if it does not alreay exist.'
+            help: 'If ticked, creates the queue with default settings if it does not already exist.'
         }
         ]
       },
-    {
-        group: 'Library Config',
+        {
+        group: 'Job Config',
         variables: [
             
-        
-       
-          { 
+        { 
             name: 'library_file', 
             optionName: 'library_file', 
             title: 'Library File', 
@@ -169,7 +167,18 @@
         { name: 'bindings', optionName: 'bindings', key: 'var', keyValue: 'value', title: 'Library PARAM\'s', type: 'grid', defaultValue: {}, serverDataBindings: true,
                 columns: [
                     { field: 'var', caption: 'Variable', size: '30%', editable: {type: 'text'}},
-                    { field: 'value', caption: 'Value', size: '70%', editable: {type: 'datapicker'}}]},
+                    { field: 'value', caption: 'Value', size: '70%', editable: {type: 'datapicker'}}]
+        },
+        { 
+            name: 'delay_ms', 
+            optionName: 'delay_ms', 
+            title: 'Minimum delay', 
+            type: 'text', 
+            required: false, 
+            defaultValue: '0',
+            serverDataBindings: true,
+            help: 'When the delay time has passed the job will be moved to the beginning of the queue and be processed as soon as a worker is idle.'
+        }
         ]
       }
   ]

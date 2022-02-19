@@ -11,6 +11,4 @@ module.exports = async (job) => {
 
     return app.define(action, true);
 
-
-
 }
