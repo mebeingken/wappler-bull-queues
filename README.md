@@ -25,6 +25,7 @@ All actions require a queue name be provided
 * The job will execute the specified Library File, pasing it the PARAM values provided
 * The job id is also provided to the library and can be accessed using $_PARAM.id
 * Optionally create a queue with the default set of parameters (see below)
+* Optionally delay job x number of milliseconds (v 1.1.0)
 * Responds with the job id
 
 ### Queue Status
