@@ -1,28 +1,26 @@
 [
   {
-  type: 'bull_queues_create_queue',
+  type: 'bull_queues_queue_clean',
   module : 'bull_queues',
-  action : 'create_queue',
+  action : 'queue_clean',
   groupTitle : 'Bull Queues',
   groupIcon : 'fas fa-skull-cow comp-exec',
-  title : 'Create Queue @@var(actionName)@@',
-  icon : 'fad fa-layer-plus comp-exec',
+  title : 'Clean queue @@var(actionName)@@',
+  icon : 'fad fa-car-wash comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1",
-                 "axios": "^0.25.0",
+				 "bull": "^4.5.1"
 			}
 		},
   dataPickObject: true,
   dataScheme: [
     {
-        name: 'response', 
-        type: 'text'}
+        name: 'jobs_removed', 
+        type: 'array'}
   ],
   properties : [
-      
     {
-        group: 'Queue Config',
+        group: 'Step properties',
         variables: [
             { 
             name: 'actionName', 
@@ -39,7 +37,113 @@
             title: 'Output', 
             type: 'boolean', 
             defaultValue: false 
-        },{ 
+        }
+        ]
+      },
+      {
+      group: 'Queue config',
+      variables: [
+        { 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue.'
+        },
+        { 
+            name: 'grace_period', 
+            optionName: 'grace_period', 
+            title: 'Grace period', 
+            type: 'text', 
+            required: false, 
+            defaultValue: '0',
+            serverDataBindings: true,
+            help: 'Clean jobs that entered this status over this period (in milliseconds).'
+        },
+        { 
+            name: 'job_status', 
+            optionName: 'job_status', 
+            title: 'Job status', 
+            type: 'droplist', 
+            values: [
+
+                {title: 'Completed', value: 'completed' },
+                {title: 'Delayed', value: 'delayed' },
+                {title: 'Failed', value: 'failed' }
+               
+                
+            ], 
+            required: true, 
+            defaultValue: 'all',
+            serverDataBindings: true,
+            help: 'Clean for the selected status type.'
+        }
+      ]
+    }
+  ]
+},
+{
+  type: 'bull_queues_create_queue',
+  module : 'bull_queues',
+  action : 'create_queue',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Create Queue @@var(actionName)@@',
+  icon : 'fad fa-layer-plus comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1"
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'response', 
+        type: 'text'}
+  ],
+  properties : [
+      {
+        group: 'Step properties',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+    {
+        group: 'Queue Config',
+        variables: [
+            
+        { 
+            name: 'processor_type', 
+            optionName: 'processor_type', 
+            title: 'Processor type', 
+            type: 'droplist', 
+            values: [
+                {title: 'Library', value: 'library' },
+                {title: 'API', value: 'api' },
+            ],    
+            required: false, 
+            defaultValue: 'library',
+            help: 'The queue can only process Library files or API\'s.  Select one here.'
+        },
+        { 
             name: 'queue_name', 
             optionName: 'queue_name', 
             title: 'Queue name', 
@@ -94,7 +198,7 @@
   usedModules : {
 			node: {
 				 "bull": "^4.5.1",
-                 "axios": "^0.25.0",
+                  "fs-extra": "^10.0.0"
 			}
 		},
   dataPickObject: true,
@@ -110,7 +214,7 @@
   ],
   properties : [
       {
-        group: 'Queue Config',
+        group: 'Step properties',
         variables: [
             { 
             name: 'actionName', 
@@ -127,7 +231,13 @@
             title: 'Output', 
             type: 'boolean', 
             defaultValue: false 
-        },
+        }
+        ]
+      },
+      {
+        group: 'Queue Config',
+        variables: [
+            
           { 
             name: 'queue_name', 
             optionName: 'queue_name', 
@@ -162,7 +272,7 @@
             required: true, 
             defaultValue: '',
             serverDataBindings: true,
-            help: 'Select the library file that will process this job.'
+            help: 'Select the library file that will process this job--found in your project\'s app/modules/lib folder (or its children).'
         },
         { name: 'bindings', optionName: 'bindings', key: 'var', keyValue: 'value', title: 'Library PARAM\'s', type: 'grid', defaultValue: {}, serverDataBindings: true,
                 columns: [
@@ -178,6 +288,130 @@
             defaultValue: '0',
             serverDataBindings: true,
             help: 'When the delay time has passed the job will be moved to the beginning of the queue and be processed as soon as a worker is idle.'
+        },
+        { 
+            name: 'remove_on_complete', 
+            optionName: 'remove_on_complete', 
+            title: 'Remove on complete', 
+            type: 'boolean', 
+            required: false, 
+            defaultValue: false,
+            serverDataBindings: true,
+            help: 'If ticked, removes the job from the queue if successfully completed.'
+        }
+        ]
+      }
+  ]
+},{
+  type: 'bull_queues_add_job_api',
+  module : 'bull_queues',
+  action : 'add_job_api',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Add Job API @@var(actionName)@@',
+  icon : 'fas fa-plus-circle comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1",
+                 "axios": "^0.25.0"
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'job_id', 
+        type: 'text'
+        },
+        {
+        name: 'queue', 
+        type: 'text'
+        }
+  ],
+  properties : [
+      {
+        group: 'Step properties',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },{
+        group: 'Queue Config',
+        variables: [
+           
+          { 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue that will process this job.'
+        },
+        { 
+            name: 'create_queue', 
+            optionName: 'create_queue', 
+            title: 'Create queue', 
+            type: 'boolean', 
+            required: false, 
+            defaultValue: false,
+            serverDataBindings: true,
+            help: 'If ticked, creates the queue with default settings if it does not already exist.'
+        }
+        ]
+      },
+        {
+        group: 'Job Config',
+        variables: [
+            
+        { 
+            name: 'api_file', 
+            optionName: 'api_file', 
+            title: 'API File', 
+            type: 'file', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the API file that will process this job--found in your project\'s app/api folder (or its children).'
+        },
+        { name: 'bindings', optionName: 'bindings', key: 'var', keyValue: 'value', title: 'API POST var\'s', type: 'grid', defaultValue: {}, serverDataBindings: true,
+                columns: [
+                    { field: 'var', caption: 'Variable', size: '30%', editable: {type: 'text'}},
+                    { field: 'value', caption: 'Value', size: '70%', editable: {type: 'datapicker'}}]
+        },
+        { 
+            name: 'delay_ms', 
+            optionName: 'delay_ms', 
+            title: 'Minimum delay', 
+            type: 'text', 
+            required: false, 
+            defaultValue: '0',
+            serverDataBindings: true,
+            help: 'When the delay time has passed the job will be moved to the beginning of the queue and be processed as soon as a worker is idle.'
+        },
+        { 
+            name: 'remove_on_complete', 
+            optionName: 'remove_on_complete', 
+            title: 'Remove on complete', 
+            type: 'boolean', 
+            required: false, 
+            defaultValue: false,
+            serverDataBindings: true,
+            help: 'If ticked, removes the job from the queue if successfully completed.'
         }
         ]
       }
@@ -194,8 +428,7 @@
   icon : 'far fa-poll comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1",
-                 "axios": "^0.25.0",
+				 "bull": "^4.5.1"
 			}
 		},
   dataPickObject: true,
@@ -206,16 +439,87 @@
   ],
   properties : [
     {
-      group: 'Job Data',
-      variables: [
-        { 
+        group: 'Step properties',
+        variables: [
+            { 
             name: 'actionName', 
             optionName: 'name', 
             title: 'Name', 
             type: 'text', 
             required: true, 
             defaultValue: ''
-        },{ 
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      {
+      group: 'Queue config',
+      variables: [
+        { 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue.'
+        }
+      ]
+    }
+  ]
+},{
+  type: 'bull_queues_get_jobs',
+  module : 'bull_queues',
+  action : 'get_jobs',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Get jobs @@var(actionName)@@',
+  icon : 'fad fa-album-collection comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.5.1"
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'jobs', 
+        type: 'array'}
+  ],
+  properties : [
+    {
+        group: 'Step properties',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      {
+      group: 'Queue config',
+      variables: [
+        { 
             name: 'queue_name', 
             optionName: 'queue_name', 
             title: 'Queue name', 
@@ -225,12 +529,25 @@
             serverDataBindings: true,
             help: 'Select the queue.'
         },
+        
         { 
-            name: 'output', 
-            optionName: 'output', 
-            title: 'Output', 
-            type: 'boolean', 
-            defaultValue: false 
+            name: 'job_status', 
+            optionName: 'job_status', 
+            title: 'Job status', 
+            type: 'droplist', 
+            values: [
+                {title: 'Active', value: 'active' },
+                {title: 'Completed', value: 'completed' },
+                {title: 'Delayed', value: 'delayed' },
+                {title: 'Failed', value: 'failed' },
+                {title: 'Waiting', value: 'waiting' }
+               
+                
+            ], 
+            required: true, 
+            defaultValue: 'active',
+            serverDataBindings: true,
+            help: 'Select the status.'
         }
       ]
     }
@@ -246,8 +563,7 @@
   icon : 'fad fa-spinner comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1",
-                 "axios": "^0.25.0",
+				 "bull": "^4.5.1"
 			}
 		},
   dataPickObject: true,
@@ -261,16 +577,30 @@
   ],
   properties : [
     {
-      group: 'Job Data',
-      variables: [
-        { 
+        group: 'Step properties',
+        variables: [
+            { 
             name: 'actionName', 
             optionName: 'name', 
             title: 'Name', 
             type: 'text', 
             required: true, 
             defaultValue: ''
-        },{ 
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      {
+      group: 'Job Data',
+      variables: [
+        { 
             name: 'queue_name', 
             optionName: 'queue_name', 
             title: 'Queue name', 
@@ -288,13 +618,6 @@
             required: true,
             serverDataBindings: true
             
-        },
-        { 
-            name: 'output', 
-            optionName: 'output', 
-            title: 'Output', 
-            type: 'boolean', 
-            defaultValue: false 
         }
       ]
     }
@@ -310,8 +633,7 @@
   icon : 'fad fa-shredder comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1",
-                 "axios": "^0.25.0",
+				 "bull": "^4.5.1"
 			}
 		},
   dataPickObject: true,
@@ -322,16 +644,30 @@
   ],
   properties : [
     {
-      group: 'Queue',
-      variables: [
-        { 
+        group: 'Step properties',
+        variables: [
+            { 
             name: 'actionName', 
             optionName: 'name', 
             title: 'Name', 
             type: 'text', 
             required: true, 
             defaultValue: ''
-        },{ 
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      {
+      group: 'Queue',
+      variables: [
+        { 
             name: 'queue_name', 
             optionName: 'queue_name', 
             title: 'Queue name', 
@@ -341,13 +677,7 @@
             serverDataBindings: true,
             help: 'Select the queue to be destroyed.'
         },
-        { 
-            name: 'output', 
-            optionName: 'output', 
-            title: 'Output', 
-            type: 'boolean', 
-            defaultValue: false 
-        }
+        
       ]
     }
   ]
