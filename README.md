@@ -26,13 +26,33 @@ All actions require a queue name be provided
 * The job id is also provided to the library and can be accessed using $_PARAM.id
 * Optionally create a queue with the default set of parameters (see below)
 * Optionally delay job x number of milliseconds (v 1.1.0)
+* Optionally remove the job from the queue when completed (v 1.2.0)
+* Responds with the job id
+* NOTE: The Add Job action currently does not work if it is executed from a previously submitted job. In other words, if you are doing an iteration where you submit new jobs from a previously submitted job, it will fail. Use the Add Job API instead.
+
+### Add Job API (v 1.2.0)
+* Add a job into a queue
+* The job will execute the specified API File, pasing it the POST values provided
+* The job id is also provided to the library and can be accessed using $_POST.id
+* Optionally create a queue with the default set of parameters (see below)
+* Optionally delay job x number of milliseconds
+* Optionally remove the job from the queue when completed
 * Responds with the job id
 
 ### Queue Status
 * Returns the job counts for the specified queue (Active, completed, waiting, delayed, etc.)
 
+### Queue Clean (v 1.2.0)
+* Removes jobs from a queue by job status
+* Optionally set grace period to retain newer jobs while deleting old
+* Job status choices: Completed, Delayed, Failed (Active jobs cannot be removed, Waiting not support by Bull queue library)
+
 ### Job State
 * Returns the job details for a given job id, along with the current status
+
+### Get Jobs (v 1.2.0)
+* Retrieve jobs by job status from a specified queue
+* Job choices: Active, Failed, Waiting, Delayed, Completed
 
 ### Destroy Queue
 * Forecably destroys a given queue
