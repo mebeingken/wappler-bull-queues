@@ -9,7 +9,7 @@
   icon : 'fad fa-car-wash comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1"
+				 "bull": "^4.6.2"
 			}
 		},
   dataPickObject: true,
@@ -86,6 +86,122 @@
   ]
 },
 {
+  type: 'bull_queues_queue_pause',
+  module : 'bull_queues',
+  action : 'queue_pause',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Pause queue @@var(actionName)@@',
+  icon : 'far fa-pause-circle comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.6.2"
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'response', 
+        type: 'text'}
+  ],
+  properties : [
+    {
+        group: 'Step properties',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      {
+      group: 'Queue config',
+      variables: [
+        { 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue.'
+        }
+      ]
+    }
+  ]
+},
+{
+  type: 'bull_queues_queue_resume',
+  module : 'bull_queues',
+  action : 'queue_resume',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Resume queue @@var(actionName)@@',
+  icon : 'far fa-play-circle comp-exec',
+  usedModules : {
+			node: {
+				 "bull": "^4.6.2"
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+    {
+        name: 'response', 
+        type: 'text'}
+  ],
+  properties : [
+    {
+        group: 'Step properties',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      {
+      group: 'Queue config',
+      variables: [
+        { 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue.'
+        }
+      ]
+    }
+  ]
+},
+{
   type: 'bull_queues_create_queue',
   module : 'bull_queues',
   action : 'create_queue',
@@ -95,7 +211,7 @@
   icon : 'fad fa-layer-plus comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1"
+				 "bull": "^4.6.2"
 			}
 		},
   dataPickObject: true,
@@ -153,13 +269,26 @@
             serverDataBindings: true,
             help: 'Name of this queue to be referenced by other actions.'
         },
+        { name: 'limit_type', optionName: 'limit_type', title: 'Job limit type', 
+        type: 'droplist', 
+        values: [
+            {title: 'Concurrency', value: 'concurrency', show:['concurrent_jobs'], hide:['max_jobs', 'max_duration'] },
+            {title: 'Limiter', value: 'limiter', show:['max_jobs', 'max_duration', 'concurrent_jobs']  },
+        
+        ], defaultValue: 'concurrency',
+            help: 'Choose your method of limiting jobs.'
+        }
+
+
+
+
           { 
             name: 'concurrent_jobs', 
             optionName: 'concurrent_jobs', 
             title: 'Number of concurrent jobs', 
             type: 'text', 
             required: false, 
-            defaultValue: '5',
+            defaultValue: 5,
             serverDataBindings: true,
             help: 'How many jobs are allowed to be run in parallel.'
         },
@@ -169,7 +298,7 @@
             title: 'Max jobs', 
             type: 'text', 
             required: false, 
-            defaultValue: '',
+            defaultValue: null,
             serverDataBindings: true,
             help: 'Maximum number of jobs processed '
         },
@@ -179,7 +308,7 @@
             title: 'Duration for Max Jobs', 
             type: 'text', 
             required: false, 
-            defaultValue: '',
+            defaultValue: null,
             serverDataBindings: true,
             help: 'Duration period when calculating Max Jobs'
         }
@@ -197,7 +326,7 @@
   icon : 'fas fa-plus-octagon comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1",
+				 "bull": "^4.6.2",
                   "fs-extra": "^10.0.0"
 			}
 		},
@@ -247,17 +376,8 @@
             defaultValue: '',
             serverDataBindings: true,
             help: 'Select the queue that will process this job.'
-        },
-        { 
-            name: 'create_queue', 
-            optionName: 'create_queue', 
-            title: 'Create queue', 
-            type: 'boolean', 
-            required: false, 
-            defaultValue: false,
-            serverDataBindings: true,
-            help: 'If ticked, creates the queue with default settings if it does not already exist.'
         }
+        
         ]
       },
         {
@@ -290,6 +410,16 @@
             help: 'When the delay time has passed the job will be moved to the beginning of the queue and be processed as soon as a worker is idle.'
         },
         { 
+            name: 'attempts', 
+            optionName: 'attempts', 
+            title: 'Attempts', 
+            type: 'text', 
+            required: false, 
+            defaultValue: 1,
+            serverDataBindings: true,
+            help: 'Number of attempts to process job.'
+        },
+        { 
             name: 'remove_on_complete', 
             optionName: 'remove_on_complete', 
             title: 'Remove on complete', 
@@ -312,7 +442,7 @@
   icon : 'fas fa-plus-circle comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1",
+				 "bull": "^4.6.2",
                  "axios": "^0.25.0"
 			}
 		},
@@ -361,16 +491,6 @@
             defaultValue: '',
             serverDataBindings: true,
             help: 'Select the queue that will process this job.'
-        },
-        { 
-            name: 'create_queue', 
-            optionName: 'create_queue', 
-            title: 'Create queue', 
-            type: 'boolean', 
-            required: false, 
-            defaultValue: false,
-            serverDataBindings: true,
-            help: 'If ticked, creates the queue with default settings if it does not already exist.'
         }
         ]
       },
@@ -404,6 +524,16 @@
             help: 'When the delay time has passed the job will be moved to the beginning of the queue and be processed as soon as a worker is idle.'
         },
         { 
+            name: 'attempts', 
+            optionName: 'attempts', 
+            title: 'Attempts', 
+            type: 'text', 
+            required: false, 
+            defaultValue: 1,
+            serverDataBindings: true,
+            help: 'Number of attempts to process job.'
+        },
+        { 
             name: 'remove_on_complete', 
             optionName: 'remove_on_complete', 
             title: 'Remove on complete', 
@@ -428,14 +558,32 @@
   icon : 'far fa-poll comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1"
+				 "bull": "^4.6.2"
 			}
 		},
   dataPickObject: true,
   dataScheme: [
-    {
-        name: 'job_id', 
-        type: 'text'}
+    { name: 'jobs_count', type: 'object', sub: 
+        [
+            { name: 'waiting', type: 'number' },
+            { name: 'active', type: 'number' },
+            { name: 'completed', type: 'number' },
+            { name: 'failed', type: 'number' },
+            { name: 'delayed', type: 'number' },
+            { name: 'paused', type: 'number' },
+            { name: 'queue', type: 'text' }
+        ]
+    },
+    { name: 'limiter', type: 'object', sub: 
+        [
+            { name: 'max', type: 'number' },
+            { name: 'duration', type: 'number' }
+        ]
+    },
+    { name: 'workers_attached', type: 'boolean' },
+    { name: 'worker_count', type: 'number' },
+    { name: 'worker_type', type: 'text' }
+
   ],
   properties : [
     {
@@ -485,7 +633,7 @@
   icon : 'fad fa-album-collection comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1"
+				 "bull": "^4.6.2"
 			}
 		},
   dataPickObject: true,
@@ -563,7 +711,7 @@
   icon : 'fad fa-spinner comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1"
+				 "bull": "^4.6.2"
 			}
 		},
   dataPickObject: true,
@@ -633,7 +781,7 @@
   icon : 'fad fa-shredder comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.5.1"
+				 "bull": "^4.6.2"
 			}
 		},
   dataPickObject: true,
