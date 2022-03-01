@@ -16,17 +16,17 @@ const defaultQueueOptions = {
     }
 }
 
-let bullQueues = [];
-let workerCounts = [];
-let processorTypes = [];
+var bullQueues = [];
+var workerCounts = [];
+var processorTypes = [];
 
-let responseMessages = {};
+var responseMessages = {};
 responseMessages['noredis'] = { "response": 'Queue NOT created -- No Redis connection.' };
 responseMessages['noqueue'] = { "response": 'Queue does not exist.' };
 
 function setupQueue(queueName) {
     if (!bullQueues[queueName]) {
-        let queueOptions = defaultQueueOptions;
+        var queueOptions = defaultQueueOptions;
         bullQueues[queueName] = new Queue(queueName, queueOptions);
 
     };
@@ -52,13 +52,12 @@ exports.create_queue = async function (options) {
             let max_duration = parseInt(this.parseOptional(options.max_duration, '*', null));
 
             if (max_duration && max_jobs) {
-
-                Object.assign(queueOptions, {
-                    limiter: {
+                queueOptions = {
+                    ...queueOptions, limiter: {
                         max: max_jobs,
                         duration: max_duration
                     }
-                });
+                }
 
             };
         }
@@ -72,7 +71,7 @@ exports.create_queue = async function (options) {
         if (!workerCounts[queueName]) {
 
             if (bullQueues[queueName]) {
-                await bullQueues[queueName].close();
+                await bullQueues[queueName].close().catch(console.error);
                 bullQueues[queueName] = null;
             }
             bullQueues[queueName] = new Queue(queueName, queueOptions);
@@ -142,7 +141,6 @@ exports.queue_status = async function (options) {
             let jobscount = await bullQueues[queueName].getJobCounts().catch(console.error);
             let workers_attached = false;
 
-            Object.assign(jobscount, { "queue": queueName })
 
             if (workers.length) {
                 workers_attached = true;
@@ -150,6 +148,7 @@ exports.queue_status = async function (options) {
 
             return {
                 "jobs_count": jobscount,
+                "queue": queueName,
                 "limiter": bullQueues[queueName].limiter || false,
                 "workers_attached": workers_attached,
                 "worker_count": workerCounts[queueName],
