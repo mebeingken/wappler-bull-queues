@@ -4,6 +4,9 @@ const fs = require('fs-extra');
 const App = require('../../../lib/core/app');
 
 module.exports = async (job, done) => {
+    job = {
+        ...job, ...job.data.jobData
+    }
     Object.assign(job, job.data.jobData);
 
     const app = new App({ params: job, session: {}, cookies: {}, signedCookies: {}, query: {}, headers: {} });
