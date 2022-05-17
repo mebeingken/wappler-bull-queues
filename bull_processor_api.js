@@ -1,20 +1,25 @@
 // JavaScript Document
 const axios = require('axios');
-const App = require('../../../lib/core/app');
+//const App = require('../../../lib/core/app');
 
 
 module.exports = async (job, done) => {
-    job = {
-        ...job, ...job.data.jobData
+    try {
+        job = {
+            ...job, ...job.data.jobData
+        }
+
+        let apiURL = job.data.baseURL + job.data.action;
+
+        axios.post(apiURL, job, { timeout: 120000 })
+            .then(() => {
+                done();
+            }).catch((err) => {
+                done(err)
+            });
+
+    } catch (error) {
+
     }
-
-    let apiURL = job.data.baseURL + job.data.action;
-
-    axios.post(apiURL, job)
-        .then(() => {
-            done();
-        }).catch((err) => {
-            done(err)
-        });
 
 }

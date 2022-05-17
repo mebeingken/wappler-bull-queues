@@ -137,12 +137,12 @@ exports.queue_status = async function (options) {
         setupQueue(queueName);
 
         if (bullQueues[queueName]) {
-            let workers = await bullQueues[queueName].getWorkers();
+
             let jobscount = await bullQueues[queueName].getJobCounts().catch(console.error);
             let workers_attached = false;
 
 
-            if (workers.length) {
+            if (workerCounts[queueName]) {
                 workers_attached = true;
             }
 
@@ -278,7 +278,41 @@ exports.get_jobs = async function (options) {
         return responseMessages.noredis;
     }
 };
+exports.retry_job = async function (options) {
+    if (redisReady) {
 
+        let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
+
+        setupQueue(queueName);
+
+        if (bullQueues[queueName]) {
+
+
+            let job_id = this.parseRequired(options.job_id, 'string', 'parameter job id is required.');
+            let job = await bullQueues[queueName].getJob(job_id);
+
+            if (job) {
+
+                job_state = await job.retry();
+                return { "response": 'queued for retry' };
+
+            } else {
+
+                job_state = 'Job not found';
+                return { "response": job_state };
+            }
+
+
+        }
+        else {
+            return responseMessages['noqueue'];
+        }
+
+    } else {
+
+        return responseMessages.noredis;
+    }
+};
 exports.job_state = async function (options) {
     if (redisReady) {
 
@@ -383,6 +417,10 @@ exports.add_job_api = async function (options) {
             let apiFile = this.parseRequired(options.api_file, 'string', 'parameter api_file is required.');
             let delay_ms = options.delay_ms;
 
+            let base_url = this.global.data.$_SERVER.REQUEST_PROTOCOL + '://' + this.global.data.$_SERVER.SERVER_NAME + '/api/';
+            if (this.global.data.$_SERVER.SERVER_NAME.includes('localhost')) {
+                base_url = 'http://localhost:' + config.port + '/api/';
+            }
 
             try {
                 var myRegexp = /(?<=api\/).*/;
@@ -401,7 +439,7 @@ exports.add_job_api = async function (options) {
 
                         jobData: jobData,
                         action: apiName,
-                        baseURL: 'http://' + this.global.data.$_SERVER.SERVER_NAME + ':' + config.port + '/api/'
+                        baseURL: base_url
                     },
                     {
                         delay: delay_ms,
