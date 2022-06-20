@@ -415,7 +415,7 @@ exports.add_job_api = async function (options) {
 
         if (bullQueues[queueName]) {
             let apiFile = this.parseRequired(options.api_file, 'string', 'parameter api_file is required.');
-            let delay_ms = options.delay_ms;
+            let delay_ms = parseInt(this.parseOptional(options.delay_ms, '*', 0));
 
             let base_url = this.global.data.$_SERVER.REQUEST_PROTOCOL + '://' + this.global.data.$_SERVER.SERVER_NAME + '/api/';
             if (this.global.data.$_SERVER.SERVER_NAME.includes('localhost')) {
