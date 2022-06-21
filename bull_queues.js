@@ -360,7 +360,7 @@ exports.add_job = async function (options) {
         setupQueue(queueName);
 
         let libraryFile = this.parseRequired(options.library_file, 'string', 'parameter library_file is required.');
-        let delay_ms = options.delay_ms;
+        let delay_ms = parseInt(this.parseOptional(options.delay_ms, '*', 0));
 
 
         try {
