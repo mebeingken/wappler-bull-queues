@@ -10,11 +10,18 @@ const redisReady = global.redisClient.ready;
 const defaultConcurrency = 5;
 const defaultQueueOptions = {
     redis: {
-        port: global.redisClient.connection_options.port,
-        host: global.redisClient.connection_options.host,
-        db: 2
+        port: process.env.REDIS_PORT || global.redisClient.options.port,
+        host: process.env.REDIS_HOST || global.redisClient.options.host,
+        db: process.env.REDIS_BULL_QUEUE_DB || 2,
+        ...(process.env.REDIS_PASSWORD || global.redisClient.options.password ? { password: process.env.REDIS_PASSWORD || global.redisClient.options.password } : {}),
+        ...(process.env.REDIS_USER || global.redisClient.options.user ? { username: process.env.REDIS_USER || global.redisClient.options.user } : {}),
+        ...(process.env.REDIS_TLS || global.redisClient.options.tls ? { tls: {} } : {}),
+        ...(process.env.REDIS_PREFIX ? { prefix: `{${process.env.REDIS_PREFIX}}` } : {}),
+        ...(process.env.REDIS_BULL_METRICS ? { metrics: { maxDataPoints: process.env.REDIS_BULL_METRICS_TIME || Queue.utils.MetricsTime.TWO_WEEKS } } : {})
     }
-}
+};
+
+
 
 var bullQueues = [];
 var workerCounts = [];
@@ -32,7 +39,7 @@ function setupQueue(queueName) {
     };
 }
 
-exports.create_queue = async function (options) {
+exports.create_queue = async function(options) {
 
     if (redisReady) {
         let processor_type = this.parseOptional(options.processor_type, 'string', 'library');
@@ -53,7 +60,8 @@ exports.create_queue = async function (options) {
 
             if (max_duration && max_jobs) {
                 queueOptions = {
-                    ...queueOptions, limiter: {
+                    ...queueOptions,
+                    limiter: {
                         max: max_jobs,
                         duration: max_duration
                     }
@@ -101,7 +109,7 @@ exports.create_queue = async function (options) {
 
 };
 
-exports.destroy_queue = async function (options) {
+exports.destroy_queue = async function(options) {
 
 
     if (redisReady) {
@@ -129,7 +137,7 @@ exports.destroy_queue = async function (options) {
     }
 };
 
-exports.queue_status = async function (options) {
+exports.queue_status = async function(options) {
     if (redisReady) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
@@ -164,7 +172,7 @@ exports.queue_status = async function (options) {
     }
 };
 
-exports.queue_clean = async function (options) {
+exports.queue_clean = async function(options) {
     if (redisReady) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
@@ -190,7 +198,7 @@ exports.queue_clean = async function (options) {
     }
 };
 
-exports.queue_pause = async function (options) {
+exports.queue_pause = async function(options) {
     if (redisReady) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
@@ -212,7 +220,7 @@ exports.queue_pause = async function (options) {
     }
 };
 
-exports.queue_resume = async function (options) {
+exports.queue_resume = async function(options) {
     if (redisReady) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
@@ -233,7 +241,7 @@ exports.queue_resume = async function (options) {
         return responseMessages.noredis;
     }
 };
-exports.get_jobs = async function (options) {
+exports.get_jobs = async function(options) {
     if (redisReady) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
@@ -263,7 +271,7 @@ exports.get_jobs = async function (options) {
                     jobs = await bullQueues[queueName].getActive().catch(console.error);
                     break;
                 default:
-                // code block
+                    // code block
             }
 
 
@@ -278,7 +286,7 @@ exports.get_jobs = async function (options) {
         return responseMessages.noredis;
     }
 };
-exports.retry_job = async function (options) {
+exports.retry_job = async function(options) {
     if (redisReady) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
@@ -303,8 +311,7 @@ exports.retry_job = async function (options) {
             }
 
 
-        }
-        else {
+        } else {
             return responseMessages['noqueue'];
         }
 
@@ -313,7 +320,7 @@ exports.retry_job = async function (options) {
         return responseMessages.noredis;
     }
 };
-exports.job_state = async function (options) {
+exports.job_state = async function(options) {
     if (redisReady) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
@@ -337,8 +344,7 @@ exports.job_state = async function (options) {
             }
 
             return { "job": job, "job_state": job_state };
-        }
-        else {
+        } else {
             return responseMessages['noqueue']
         }
 
@@ -349,7 +355,7 @@ exports.job_state = async function (options) {
 };
 
 
-exports.add_job = async function (options) {
+exports.add_job = async function(options) {
 
     if (redisReady) {
 
@@ -376,18 +382,15 @@ exports.add_job = async function (options) {
 
 
         if (processorTypes[queueName] == 'library' || !workerCounts[queueName]) {
-            const job = await bullQueues[queueName].add(
-                {
+            const job = await bullQueues[queueName].add({
 
-                    jobData: jobData,
-                    action: libraryName
-                },
-                {
-                    delay: delay_ms,
-                    removeOnComplete: remove_on_complete,
-                    attempts: attempts
-                }
-            ).catch(console.error);
+                jobData: jobData,
+                action: libraryName
+            }, {
+                delay: delay_ms,
+                removeOnComplete: remove_on_complete,
+                attempts: attempts
+            }).catch(console.error);
 
             return { "job_id": job.id, "queue": queueName };
         } else {
@@ -403,7 +406,7 @@ exports.add_job = async function (options) {
     }
 };
 
-exports.add_job_api = async function (options) {
+exports.add_job_api = async function(options) {
 
     if (redisReady) {
 
@@ -434,19 +437,16 @@ exports.add_job_api = async function (options) {
             var jobData = this.parse(options.bindings) || {}
 
             if (processorTypes[queueName] == 'api' || !workerCounts[queueName]) {
-                const job = await bullQueues[queueName].add(
-                    {
+                const job = await bullQueues[queueName].add({
 
-                        jobData: jobData,
-                        action: apiName,
-                        baseURL: base_url
-                    },
-                    {
-                        delay: delay_ms,
-                        removeOnComplete: remove_on_complete,
-                        attempts: attempts
-                    }
-                ).catch(console.error);
+                    jobData: jobData,
+                    action: apiName,
+                    baseURL: base_url
+                }, {
+                    delay: delay_ms,
+                    removeOnComplete: remove_on_complete,
+                    attempts: attempts
+                }).catch(console.error);
 
                 return { "job_id": job.id, "queue": queueName };
             } else {
