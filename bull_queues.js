@@ -21,8 +21,6 @@ const defaultQueueOptions = {
     }
 };
 
-
-
 var bullQueues = [];
 var workerCounts = [];
 var processorTypes = [];
@@ -412,6 +410,7 @@ exports.add_job_api = async function(options) {
 
         let queueName = this.parseRequired(options.queue_name, 'string', 'Queue name is required');
         let remove_on_complete = this.parseOptional(options.remove_on_complete, 'boolean', false);
+        let remove_on_fail = this.parseOptional(options.remove_on_fail, 'boolean', false);
         let attempts = parseInt(this.parseOptional(options.attempts, '*', 1));
 
         setupQueue(queueName);
@@ -445,6 +444,7 @@ exports.add_job_api = async function(options) {
                 }, {
                     delay: delay_ms,
                     removeOnComplete: remove_on_complete,
+                    removeOnFail: remove_on_fail,
                     attempts: attempts
                 }).catch(console.error);
 

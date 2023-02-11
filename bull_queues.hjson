@@ -542,6 +542,16 @@
             defaultValue: false,
             serverDataBindings: true,
             help: 'If ticked, removes the job from the queue if successfully completed.'
+        },
+        { 
+            name: 'remove_on_fail', 
+            optionName: 'remove_on_fail', 
+            title: 'Remove on fail', 
+            type: 'boolean', 
+            required: false, 
+            defaultValue: false,
+            serverDataBindings: true,
+            help: 'If ticked, removes the job from the queue if the job failed.'
         }
         ]
       }
