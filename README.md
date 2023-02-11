@@ -4,7 +4,7 @@
 Allows for the creation of one to many queues to offload the execution of Wappler library tasks
 
 ## Requirements
-* Functioning Redis connection, specified within the Wappler server config
+* Functioning Redis connection, specified within the Wappler server config or a Redis connection defined with ENV variables
 
 ## Installation
 * In your project folder, create /extensions/server_connect/modules (if it does not yet exist)
@@ -37,6 +37,7 @@ All actions require a queue name be provided
 * Optionally create a queue with the default set of parameters (see below)
 * Optionally delay job x number of milliseconds
 * Optionally remove the job from the queue when completed
+* Optionally remove the job from the queue when failed
 * Responds with the job id
 
 ### Queue Status
