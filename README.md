@@ -13,6 +13,17 @@ Allows for the creation of one to many queues to offload the execution of Wapple
 * The required libraries will be installed automatically upon use and next deployment
 * You should now have a Bull Queues group in your available actions list for server workflows
 
+## Optional ENV Variables
+* REDIS_PORT: The Redis port
+* REDIS_HOST: The Redis host
+* REDIS_BULL_QUEUE_DB: The Redis database for bull queues
+* REDIS_PASSWORD: The Redis password
+* REDIS_USER: The Redis user
+* REDIS_TLS: The TLS certificate. Define it is {} if you need a TLS connection without defining a cert.
+* REDIS_PREFIX: The prefix for the database. This is useful if you need to connect to a clusert.
+* REDIS_BULL_METRICS: Boolean. Enables Bull metrics collection which can be visualised with a GUI like https://taskforce.sh/
+* REDIS_BULL_METRICS_TIME: The timeframe for metric collection. Defaults to TWO_WEEKS if metrics are enabled
+
 ## Actions
 All actions require a queue name be provided
 

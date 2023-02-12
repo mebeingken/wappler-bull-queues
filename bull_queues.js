@@ -17,7 +17,12 @@ const defaultQueueOptions = {
         ...(process.env.REDIS_USER || global.redisClient.options.user ? { username: process.env.REDIS_USER || global.redisClient.options.user } : {}),
         ...(process.env.REDIS_TLS || global.redisClient.options.tls ? { tls: {} } : {}),
         ...(process.env.REDIS_PREFIX ? { prefix: `{${process.env.REDIS_PREFIX}}` } : {}),
-        ...(process.env.REDIS_BULL_METRICS ? { metrics: { maxDataPoints: process.env.REDIS_BULL_METRICS_TIME || Queue.utils.MetricsTime.TWO_WEEKS } } : {})
+        ...(process.env.REDIS_BULL_METRICS ? {
+            metrics: {
+                maxDataPoints: process.env.REDIS_BULL_METRICS_TIME ?
+                    Queue.utils.MetricsTime[process.env.REDIS_BULL_METRICS_TIME] : Queue.utils.MetricsTime.TWO_WEEKS,
+            },
+        } : {}),
     }
 };
 
