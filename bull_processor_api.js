@@ -1,50 +1,53 @@
 const axios = require("axios");
+const bullLogging = require('./bull_logging.js');
 
-module.exports = async(job, done) => {
+module.exports = async (job, done) => {
     try {
         job = {
             ...job,
             ...job.data.jobData,
         };
 
+        const bullLog = job.data.bullLog;
+        const loggerOptions = job.data.loggerOptions;
+
+        const bc_logger = bullLogging.setupWinston(loggerOptions.console_logging, loggerOptions.file_logging, "BullQAPIJob");
+
         const apiURL = job.data.baseURL + job.data.action;
 
-        console.log(`Processing job ${job.id} with API URL: ${apiURL}`);
+        bc_logger.debug(`Processing job ${job.id} with API URL: ${apiURL}`);
 
-        await job.log(`Processing job ${job.id} with API URL: ${apiURL}`);
+        bullLog ? await job.log(`Processing job ${job.id} with API URL: ${apiURL}`) : null;
 
-        console.log(`Sending POST request to API URL: ${apiURL} with data: `, job);
+        bc_logger.debug(`Sending POST request to API URL: ${apiURL} with data: `, job);
 
-        await job.log(`Sending POST request to API URL: ${apiURL} with data: ${JSON.stringify(job)}`);
+        bullLog ? await job.log(`Sending POST request to API URL: ${apiURL} with data: ${JSON.stringify(job)}`) : null;
 
         axios
             .post(apiURL, job, { timeout: 120000 })
             .then((response) => {
-                console.log(`Job ${job.id} completed successfully`);
 
-                job.log(`Job ${job.id} completed successfully. Response: ${JSON.stringify(response.data)}`)
-                    .then(() => {
-                        done();
-                    })
-                    .catch((err) => {
-                        done(err);
-                    });
+                bc_logger.debug(`Job ${job.id} API response: `, response.data);
+                bc_logger.info(`Job ${job.id} completed successfully`);
+                bullLog ? job.log(`Job ${job.id} completed successfully. Response: ${JSON.stringify(response.data)}`) : null
+                done()
+
+
             })
             .catch((err) => {
-                console.log(`Job ${job.id} failed with error: ${err.message}`);
 
-                job.log(`Job ${job.id} failed with error: ${err.message}`)
-                    .then(() => {
-                        done(err);
-                    })
-                    .catch((err) => {
-                        done(err);
-                    });
+                bc_logger.error(`Job ${job.id} failed with error: ${err.message}`);
+
+                bullLog ? job.log(`Job ${job.id} failed with error: ${err.message}`) : null
+
+                done(err);
+
+
             });
     } catch (error) {
-        console.log(`Job ${job.id} failed with error: ${error.message}`);
+        bc_logger.error(`Job ${job.id} failed with error: ${error.message}`);
 
-        await job.log(`Job ${job.id} failed with error: ${error.message}`);
+        bullLog ? await job.log(`Job ${job.id} failed with error: ${error.message}`) : null;
 
         done(error);
     }

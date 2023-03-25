@@ -1,25 +1,104 @@
 [
   {
-  type: 'bull_queues_queue_clean',
-  module : 'bull_queues',
-  action : 'queue_clean',
-  groupTitle : 'Bull Queues',
-  groupIcon : 'fas fa-skull-cow comp-exec',
-  title : 'Clean queue @@var(actionName)@@',
-  icon : 'fad fa-car-wash comp-exec',
-  usedModules : {
+    type: 'bull_queues_bq_logging',
+    module : 'bull_queues',
+    action : 'bq_logging',
+    groupTitle : 'Bull Queues',
+    groupIcon : 'fas fa-skull-cow comp-exec',
+    title : 'Configure logging @@var(actionName)@@',
+    icon : 'fad fa-history comp-exec',
+    usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				 "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
-  dataPickObject: true,
-  dataScheme: [
-    {
+    dataPickObject: true,
+    dataScheme: [
+      {
         name: 'jobs_removed', 
         type: 'array'}
-  ],
-  properties : [
+    ],
+    properties : [
+      {
+        group: 'Step properties',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      
     {
+        group: 'Log options',
+        variables: [
+                   { 
+          name: 'console_logging',
+          optionName: 'console_logging', 
+          title: 'Console log level', 
+          type: 'text', 
+          serverDataBindings: true,
+          defaultValue: 'error',
+	        help: 'Log level (error, warn, info, debug)'
+        }, 
+        { 
+          name: 'file_logging',
+          optionName: 'file_logging', 
+          title: 'File log level', 
+          type: 'text', 
+          serverDataBindings: true,
+          defaultValue: 'none',
+	        help: 'Log level (none, error, warn, info, debug)'
+        },{ 
+          name: 'bull_logging',
+          optionName: 'bull_logging', 
+          title: 'Enable Bull job logging', 
+          type: 'text', 
+          serverDataBindings: true,
+          defaultValue: 'false',
+	        help: 'True enables integrated Bull job logging to Redis (ie. for Bull Board)'
+        }
+        ]
+      }
+  ]
+},
+  {
+    type: 'bull_queues_queue_clean',
+    module : 'bull_queues',
+    action : 'queue_clean',
+    groupTitle : 'Bull Queues',
+    groupIcon : 'fas fa-skull-cow comp-exec',
+    title : 'Clean queue @@var(actionName)@@',
+    icon : 'fad fa-car-wash comp-exec',
+    usedModules : {
+			node: {
+				 "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
+			}
+		},
+    dataPickObject: true,
+    dataScheme: [
+      {
+        name: 'jobs_removed', 
+        type: 'array'}
+    ],
+    properties : [
+      {
         group: 'Step properties',
         variables: [
             { 
@@ -83,6 +162,7 @@
         }
       ]
     }
+    
   ]
 },
 {
@@ -95,7 +175,9 @@
   icon : 'far fa-pause-circle comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
   dataPickObject: true,
@@ -153,7 +235,9 @@
   icon : 'far fa-play-circle comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
   dataPickObject: true,
@@ -199,6 +283,7 @@
         }
       ]
     }
+    
   ]
 },
 {
@@ -211,7 +296,9 @@
   icon : 'fad fa-layer-plus comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
   dataPickObject: true,
@@ -232,7 +319,6 @@
             required: true, 
             defaultValue: ''
         },
-        
         { 
             name: 'output', 
             optionName: 'output', 
@@ -242,6 +328,7 @@
         }
         ]
       },
+      
     {
         group: 'Queue Config',
         variables: [
@@ -314,6 +401,7 @@
         }
         ]
       }
+      
   ]
 },
 {
@@ -326,8 +414,10 @@
   icon : 'fas fa-plus-octagon comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2",
-                  "fs-extra": "^10.0.0"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1",
+          "fs-extra": "^10.0.0"
 			}
 		},
   dataPickObject: true,
@@ -431,6 +521,7 @@
         }
         ]
       }
+      
   ]
 },{
   type: 'bull_queues_add_job_api',
@@ -442,8 +533,10 @@
   icon : 'fas fa-plus-circle comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2",
-                 "axios": "^0.25.0"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1",
+         "axios": "^0.25.0"
 			}
 		},
   dataPickObject: true,
@@ -555,6 +648,7 @@
         }
         ]
       }
+      
   ]
 },
 
@@ -568,7 +662,9 @@
   icon : 'far fa-poll comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
   dataPickObject: true,
@@ -643,7 +739,9 @@
   icon : 'fad fa-album-collection comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
   dataPickObject: true,
@@ -721,7 +819,9 @@
   icon : 'fad fa-spinner comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
   dataPickObject: true,
@@ -779,6 +879,78 @@
         }
       ]
     }
+    
+  ]
+},
+{
+  type: 'bull_queues_retry_job',
+  module : 'bull_queues',
+  action : 'retry_job',
+  groupTitle : 'Bull Queues',
+  groupIcon : 'fas fa-skull-cow comp-exec',
+  title : 'Retry job @@var(actionName)@@',
+  icon : 'fad fa-spinner comp-exec',
+  usedModules : {
+			node: {
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
+			}
+		},
+  dataPickObject: true,
+  dataScheme: [
+   
+        {
+        name: 'response', 
+        type: 'text'}
+  ],
+  properties : [
+    {
+        group: 'Step properties',
+        variables: [
+            { 
+            name: 'actionName', 
+            optionName: 'name', 
+            title: 'Name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: ''
+        },
+        
+        { 
+            name: 'output', 
+            optionName: 'output', 
+            title: 'Output', 
+            type: 'boolean', 
+            defaultValue: false 
+        }
+        ]
+      },
+      {
+      group: 'Job Data',
+      variables: [
+        { 
+            name: 'queue_name', 
+            optionName: 'queue_name', 
+            title: 'Queue name', 
+            type: 'text', 
+            required: true, 
+            defaultValue: '',
+            serverDataBindings: true,
+            help: 'Select the queue that holds this job.'
+        },
+        { 
+            name: 'job_id', 
+            optionName: 'job_id', 
+            title: 'JobID', 
+            type: 'text', 
+            required: true,
+            serverDataBindings: true
+            
+        }
+      ]
+    }
+    
   ]
 },
 {
@@ -791,7 +963,9 @@
   icon : 'fad fa-shredder comp-exec',
   usedModules : {
 			node: {
-				 "bull": "^4.6.2"
+				  "bull": "^4.6.2",
+          "winston": "^3.8.2",
+          "winston-daily-rotate-file": "^4.7.1"
 			}
 		},
   dataPickObject: true,
@@ -838,6 +1012,7 @@
         
       ]
     }
+    
   ]
 }
 ]
