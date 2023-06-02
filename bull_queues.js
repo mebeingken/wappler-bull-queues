@@ -22,7 +22,11 @@ if (process.env.REDIS_HOST || typeof global.redisClient !== 'undefined') {
 const defaultQueueOptions = {
     redis: {
         port: process.env.REDIS_PORT || global.redisClient ? global.redisClient.options.port : {},
-        host: process.env.REDIS_HOST || global.redisClient ? global.redisClient.options.host : {},
+        host: process.env.REDIS_HOST ||
+            (global.redisClient ?
+                (global.redisClient.options.host ?
+                    global.redisClient.options.host :
+                    global.redisClient.options.socket.host) : {}),
         db: process.env.REDIS_BULL_QUEUE_DB || 2,
         ...(process.env.REDIS_PASSWORD || global.redisClient ? global.redisClient.options.password ? { password: process.env.REDIS_PASSWORD || global.redisClient.options.password } : {} : {}),
         ...(process.env.REDIS_USER || global.redisClient ? global.redisClient.options.user ? { username: process.env.REDIS_USER || global.redisClient.options.user } : {} : {}),
@@ -55,7 +59,7 @@ function setupQueue(queueName) {
     };
 }
 
-exports.bq_logging = async function (options) {
+exports.bq_logging = async function(options) {
 
     console_logging = this.parseOptional(options.console_logging, 'string', 'error');
     file_logging = this.parseOptional(options.file_logging, 'string', 'none');
@@ -68,7 +72,7 @@ exports.bq_logging = async function (options) {
     return { "response": 'Logging configuration updated' }
 }
 
-exports.create_queue = async function (options) {
+exports.create_queue = async function(options) {
 
 
     bq_logger.debug('Create queue start');
@@ -178,7 +182,7 @@ exports.create_queue = async function (options) {
 
 };
 
-exports.destroy_queue = async function (options) {
+exports.destroy_queue = async function(options) {
 
     bq_logger.debug('Destroy queue start');
 
@@ -214,7 +218,7 @@ exports.destroy_queue = async function (options) {
     }
 };
 
-exports.queue_status = async function (options) {
+exports.queue_status = async function(options) {
 
     bq_logger.debug('Queue status start');
 
@@ -263,7 +267,7 @@ exports.queue_status = async function (options) {
     }
 };
 
-exports.queue_clean = async function (options) {
+exports.queue_clean = async function(options) {
 
     bq_logger.debug('Clean queue start');
 
@@ -296,7 +300,7 @@ exports.queue_clean = async function (options) {
     }
 };
 
-exports.queue_pause = async function (options) {
+exports.queue_pause = async function(options) {
 
     bq_logger.debug('Pause queue start');
 
@@ -326,7 +330,7 @@ exports.queue_pause = async function (options) {
     }
 };
 
-exports.queue_resume = async function (options) {
+exports.queue_resume = async function(options) {
 
     bq_logger.debug('Resume queue start');
 
@@ -352,7 +356,7 @@ exports.queue_resume = async function (options) {
         return responseMessages.noredis;
     }
 };
-exports.get_jobs = async function (options) {
+exports.get_jobs = async function(options) {
 
     bq_logger.debug('Get jobs start');
 
@@ -388,7 +392,7 @@ exports.get_jobs = async function (options) {
                     jobs = await bullQueues[queueName].getActive().catch(console.error);
                     break;
                 default:
-                // code block
+                    // code block
             }
 
 
@@ -405,7 +409,7 @@ exports.get_jobs = async function (options) {
         return responseMessages.noredis;
     }
 };
-exports.retry_job = async function (options) {
+exports.retry_job = async function(options) {
 
     bq_logger.debug('Retry job start');
 
@@ -428,8 +432,7 @@ exports.retry_job = async function (options) {
 
                 try {
                     job_state = await job.retry();
-                }
-                catch (err) {
+                } catch (err) {
                     bq_logger.warn('JobID ' + job_id + ': ' + err.message);
                     return { "response": err.message }
                 }
@@ -455,7 +458,7 @@ exports.retry_job = async function (options) {
         return responseMessages.noredis;
     }
 };
-exports.job_state = async function (options) {
+exports.job_state = async function(options) {
 
     bq_logger.debug('Job state start');
 
@@ -498,7 +501,7 @@ exports.job_state = async function (options) {
     }
 };
 
-exports.add_job = async function (options) {
+exports.add_job = async function(options) {
 
     const bull_logging = this.parseOptional(options.bull_logging, 'string', 'false');
 
@@ -564,7 +567,7 @@ exports.add_job = async function (options) {
     }
 };
 
-exports.add_job_api = async function (options) {
+exports.add_job_api = async function(options) {
 
     bq_logger.debug('Add job api start');
 
