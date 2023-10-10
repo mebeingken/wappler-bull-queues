@@ -12,16 +12,16 @@ var bullLog = false;
 var bq_logger = bullLogging.setupWinston(console_logging, file_logging, "BullQueue");
 
 const defaultConcurrency = 5;
-var redisReady = false;
 
-if (process.env.REDIS_HOST || typeof global.redisClient !== 'undefined') {
-    redisReady = true;
-}
-
+const redisReady = global.redisClient.isReady;
 
 const defaultQueueOptions = {
     redis: {
-        port: process.env.REDIS_PORT || global.redisClient ? global.redisClient.options.port : {},
+        port: process.env.REDIS_PORT ||
+            (global.redisClient ?
+                (global.redisClient.options.port ?
+                    global.redisClient.options.port :
+                    global.redisClient.options.socket.port) : {}),
         host: process.env.REDIS_HOST ||
             (global.redisClient ?
                 (global.redisClient.options.host ?
